@@ -37,3 +37,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### 项目本地临时文件 ###
+.dsh-tools/
+images/

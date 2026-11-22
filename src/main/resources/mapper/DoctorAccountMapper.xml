@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--医师模块使用的账号数据访问映射文件（account 表）-->
+<mapper namespace="com.qst.medical.mapper.DoctorAccountMapper">
+
+    <!--更新账户信息时动态拼接的字段-->
+    <sql id="updateValue">
+        <trim prefixOverrides=",">
+            <if test="pwd != null and pwd != ''">
+                ,pwd=#{pwd}
+            </if>
+            <if test="uname != null and uname != ''">
+                ,uname=#{uname}
+            </if>
+            <if test="phoneNumber != null and phoneNumber != ''">
+                ,phonenumber=#{phoneNumber}
+            </if>
+            <if test="realname != null and realname != ''">
+                ,realname=#{realname}
+            </if>
+            <if test="updatetime != null">
+                ,updatetime=#{updatetime}
+            </if>
+            <if test="createtime != null">
+                ,createtime=#{createtime}
+            </if>
+        </trim>
+    </sql>
+
+    <!--检查手机号：统计 doctor 表中使用该手机号的医师数量，修改医师时排除该医师自身-->
+    <select id="checkPhone" resultType="int">
+        select count(id) from `doctor` where phone = #{phoneNumber}
+        <if test="doctorId != null">
+            and id != #{doctorId}
+        </if>
+        limit 1
+    </select>
+
+    <!--根据账号id重置密码-->
+    <update id="resetPwd">
+        update account set pwd = #{pwd} where id = #{id}
+    </update>
+
+    <!--注册账号（返回自增主键，供医师表写入 account_id）-->
+    <insert id="regist" useGeneratedKeys="true" keyProperty="id">
+        insert into account(uname, realname, pwd, phonenumber, utype, updatetime, createtime)
+        values(#{uname}, #{realname}, #{pwd}, #{phoneNumber}, #{utype}, #{updatetime}, #{createtime})
+    </insert>
+
+    <!--更新账户信息-->
+    <update id="updateAccount">
+        update account set <include refid="updateValue"/> where id = #{id}
+    </update>
+
+    <!--根据医师id查询其关联的账号id-->
+    <select id="getAccountIdByDoctorId" resultType="java.lang.Long">
+        select account_id from `doctor` where id = #{doctorId}
+    </select>
+
+</mapper>
